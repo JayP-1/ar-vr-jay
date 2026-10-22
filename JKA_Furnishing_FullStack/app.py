@@ -436,6 +436,14 @@ def import_csv():
 def template_csv():
     return send_file(os.path.join(ROOT, "data", "catalog_template.csv"), as_attachment=True)
 
+
+# Initialize the database when Gunicorn imports this module.
+init_db()
+
 if __name__ == "__main__":
-    init_db()
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", "5000")), debug=False)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", "5000")),
+        debug=False
+    )
+
