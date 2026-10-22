@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Try it in your room — JKA Furnishing</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<style>
+:root{--ink:#21201d;--paper:#f8f5ef;--lime:#d8ed78;--mint:#8ed9d2}
+body.room-body{margin:0;background:var(--paper);color:var(--ink);font-family:'DM Sans',Arial,sans-serif}
+.room-top{display:flex;justify-content:space-between;align-items:center;padding:17px 4.5%;border-bottom:1px solid #ded9ce;font:10px 'DM Mono',monospace;letter-spacing:.1em}
+.room-shell{max-width:1250px;margin:auto;padding:24px 4.5% 44px}
+.room-heading{display:flex;justify-content:space-between;gap:18px;align-items:end;flex-wrap:wrap;margin-bottom:20px}
+.room-heading h1{font-size:clamp(34px,5vw,64px);line-height:.98;letter-spacing:-.05em;margin:9px 0}
+.room-heading h1 em{font-family:'Playfair Display',serif;font-weight:500}
+.room-heading p{max-width:650px;color:#68645c;line-height:1.6;font-size:14px}
+.room-stage{position:relative;isolation:isolate;min-height:360px;height:min(62vh,650px);overflow:hidden;background:linear-gradient(#dbe8e1 0 62%,#c4b198 62%);border:1px solid #cfc8bc;box-shadow:9px 9px 0 var(--ink)}
+#camera{display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);z-index:-1}
+.room-stage.camera-on #camera{display:block} .room-stage.camera-on #fallbackRoom{display:none}
+#fallbackRoom:before{content:"";position:absolute;left:7%;top:9%;width:26%;height:45%;border:9px solid #f8f2e9;background:linear-gradient(90deg,#9bc9c0 0 48%,#e8ddcb 48%);box-shadow:0 4px 0 #a99b86}
+#fallbackRoom:after{content:"";position:absolute;right:8%;top:10%;width:17%;height:34%;background:#c6d9cf;border:7px solid #f8f2e9;box-shadow:0 4px 0 #a99b86}
+.stage-label{position:absolute;left:14px;top:14px;padding:9px 12px;background:#fffdf0e8;border:1px solid #d7d0c4;font:10px 'DM Mono',monospace;letter-spacing:.08em}
+.stage-label b{color:#328364}
+.stage-hint{position:absolute;left:14px;bottom:14px;max-width:calc(100% - 28px);padding:10px 12px;background:#fffdf0e8;border:1px solid #d7d0c4;font-size:11px}
+#furnitureOverlay{position:absolute;left:50%;top:59%;width:clamp(170px,27vw,300px);height:180px;display:flex;align-items:center;justify-content:center;cursor:grab;touch-action:none;user-select:none;filter:drop-shadow(0 17px 8px #27251d42);z-index:3}
+#furnitureOverlay:active{cursor:grabbing}.furniture-emoji{font-size:clamp(105px,16vw,180px);line-height:1}
+#objectLabel{position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);white-space:nowrap;background:#fffdf0e8;border:1px solid #d7d0c4;border-radius:30px;padding:5px 9px;font:10px 'DM Mono',monospace}
+.room-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:18px}
+.room-controls button,.room-controls a{display:flex;justify-content:center;align-items:center;padding:13px 10px;border:1px solid #d6d0c5;background:#fffdf8;color:var(--ink);text-decoration:none;border-radius:99px;font:11px 'DM Mono',monospace;cursor:pointer}
+.room-controls .primary{background:var(--ink);color:white;border-color:var(--ink)}
+.room-note{margin-top:16px;padding:13px 15px;background:#eef0e4;border-left:4px solid var(--lime);font-size:12px;line-height:1.6;color:#50564e}
+.room-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;font:10px 'DM Mono',monospace;color:#6a6e66}
+.room-meta span{padding:7px 10px;border:1px solid #ded8ce;border-radius:20px}
+@media(max-width:650px){.room-shell{padding:18px 4vw 30px}.room-stage{height:55vh;min-height:320px}.room-controls{grid-template-columns:repeat(2,minmax(0,1fr))}#furnitureOverlay{width:220px}}
+</style></head>
+<body class="room-body">
+<nav class="room-top"><span>JKA / FURNISHING</span><a href="/#catalogue">← BACK TO CATALOGUE</a></nav>
+<main class="room-shell">
+<div class="room-heading"><div><p class="eyebrow">CAMERA ROOM PREVIEW / INTERACTIVE DEMO</p><h1>Try it in <em>your space.</em></h1>
+<p>Start the camera, then drag the furniture preview to position it. Rotate and resize it to demonstrate a room-placement workflow.</p></div></div>
+<div class="room-stage" id="stage"><div id="fallbackRoom"></div><video id="camera" autoplay playsinline muted></video>
+<div class="stage-label"><b>●</b> <span id="cameraStatus">ROOM PREVIEW READY</span></div>
+<div id="furnitureOverlay" aria-label="Drag to move furniture preview" role="img"><span class="furniture-emoji" id="furnitureEmoji">🛋️</span><span id="objectLabel">{{ product.title }}</span></div>
+<div class="stage-hint" id="stageHint">Click Start Camera, allow permission, then drag the furniture overlay. Controls also work with the sample room.</div></div>
+<div class="room-meta"><span>{{ product.category }}</span><span>{{ product.retailer }}</span><span>Current price and stock: retailer website</span></div>
+<div class="room-controls">
+<button class="primary" id="startCamera">◎ Start camera</button><button id="switchCamera">↻ Switch camera</button>
+<button id="rotate">⟳ Rotate object</button><button id="smaller">− Smaller</button>
+<button id="larger">＋ Larger</button><button id="reset">↺ Reset position</button>
+<button id="snapshot">▣ Save preview image</button><a href="{{ product.product_url or '/#catalogue' }}" target="_blank" rel="noopener noreferrer">↗ Find this style</a>
+</div>
+<div class="room-note"><b>Prototype limitation:</b> this is a browser-camera overlay with a draggable furniture symbol, not true 3D plane detection or world-locked AR. Camera access normally requires localhost or HTTPS. For a real phone demo, deploy over HTTPS. Product search links open retailer results; they are not live affiliate feeds unless approved affiliate IDs are configured.</div>
+</main>
+<script>
+const stage=document.getElementById('stage'),video=document.getElementById('camera'),overlay=document.getElementById('furnitureOverlay');
+const emoji=document.getElementById('furnitureEmoji'),cameraStatus=document.getElementById('cameraStatus'),hint=document.getElementById('stageHint');
+const category={{ product.category|tojson }};
+const symbols={Sofas:'🛋️',Chairs:'🪑',Tables:'🪵',Beds:'🛏️',Storage:'🗄️',Lighting:'💡',Decor:'🪴',Other:'🪑'};
+emoji.textContent=symbols[category]||'🪑';
+let stream=null,facing='environment',scale=1,rotation=0,x=50,y=59,drag=null;
+function apply(){overlay.style.left=x+'%';overlay.style.top=y+'%';overlay.style.transform=`translate(-50%,-50%) rotate(${rotation}deg) scale(${scale})`;}
+async function startCamera(){try{if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw Error('unsupported');if(stream)stream.getTracks().forEach(t=>t.stop());stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing},audio:false});video.srcObject=stream;await video.play();stage.classList.add('camera-on');cameraStatus.textContent='CAMERA ACTIVE';hint.textContent='Drag the furniture overlay to place it. Rotate and resize using the controls below.';}catch(e){cameraStatus.textContent='CAMERA UNAVAILABLE';hint.textContent='Camera permission is blocked or this page needs localhost/HTTPS. The sample room remains interactive for your demo.';}}
+document.getElementById('startCamera').onclick=startCamera;
+document.getElementById('switchCamera').onclick=()=>{facing=facing==='environment'?'user':'environment';startCamera();};
+document.getElementById('rotate').onclick=()=>{rotation=(rotation+15)%360;apply();};
+document.getElementById('smaller').onclick=()=>{scale=Math.max(.45,scale-.1);apply();};
+document.getElementById('larger').onclick=()=>{scale=Math.min(1.8,scale+.1);apply();};
+document.getElementById('reset').onclick=()=>{scale=1;rotation=0;x=50;y=59;apply();};
+overlay.addEventListener('pointerdown',e=>{drag={id:e.pointerId,sx:e.clientX,sy:e.clientY,x,y};overlay.setPointerCapture(e.pointerId);});
+overlay.addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;const r=stage.getBoundingClientRect();x=Math.max(8,Math.min(92,drag.x+(e.clientX-drag.sx)/r.width*100));y=Math.max(15,Math.min(88,drag.y+(e.clientY-drag.sy)/r.height*100));apply();});
+overlay.addEventListener('pointerup',()=>drag=null);overlay.addEventListener('pointercancel',()=>drag=null);
+document.getElementById('snapshot').onclick=()=>{if(!stage.classList.contains('camera-on')){alert('Start the camera first, or use your device screenshot on the sample room.');return;}const c=document.createElement('canvas'),r=stage.getBoundingClientRect();c.width=r.width;c.height=r.height;const ctx=c.getContext('2d');ctx.save();ctx.translate(c.width,0);ctx.scale(-1,1);ctx.drawImage(video,0,0,c.width,c.height);ctx.restore();const e=emoji.getBoundingClientRect(),s=stage.getBoundingClientRect();ctx.font=`${Math.round(e.height*.7)}px serif`;ctx.textAlign='center';ctx.fillText(emoji.textContent,c.width-(e.left-s.left+e.width/2),e.top-s.top+e.height*.78);const a=document.createElement('a');a.download='jka-room-preview.png';a.href=c.toDataURL('image/png');a.click();};
+apply();
+</script></body></html>

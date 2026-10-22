@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JKA Furnishing — furniture discovery</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="topline"><span>JKA / FURNISHING</span><span>DISCOVER YOUR SPACE <i>✳</i></span><a href="/admin">ADMIN + DATA IMPORT ↗</a></div>
+<header class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">THE FURNITURE FINDER / INDIA</p>
+    <h1>Make room<br>for <em>better living.</em></h1>
+    <p class="sub">Browse dozens of furniture styles, compare retailer search results, then try a room-placement preview.</p>
+    <div class="hero-actions"><a class="pill dark" href="#catalogue">Explore the catalogue ↓</a><a class="pill light" href="/admin">Add products +</a></div>
+  </div>
+  <div class="hero-art"><div class="sun"></div><div class="arch arch1"></div><div class="arch arch2"></div><div class="plant">✳</div><div class="art-label">FORM<br>MEETS<br>FUNCTION</div><div class="art-number">01—∞</div></div>
+  <div class="hero-foot"><span>DESIGN IS PERSONAL.</span><span>PRODUCTS FROM MULTIPLE SOURCES · RETAILER SEARCH LINKS · VERIFY OFFERS AT SOURCE</span></div>
+</header>
+<main>
+<section class="ticker"><span>FIND IT.</span><b>COMPARE IT.</b><span>PLACE IT.</span><b>LOVE YOUR SPACE.</b></section>
+
+<section class="three-d-studio" id="3d-studio">
+  <div class="section-head studio-head"><div><p class="eyebrow">LIVE 3D / MOBILE AR</p><h2>Meet the pieces in <em>three dimensions.</em></h2><p class="studio-sub">Rotate the models in your browser, then tap “Place in my room” on a compatible phone to launch its AR viewer.</p></div><div class="studio-count"><strong>06</strong><span>INTERACTIVE<br>3D MODELS</span></div></div>
+  <div class="three-d-grid">
+  {% for m in featured_models %}
+    <article class="three-d-card">
+      <div class="three-d-view"><model-viewer src="{{ m.model_url }}" alt="3D model of {{ m.title }}" camera-controls touch-action="pan-y" auto-rotate rotation-per-second="12deg" shadow-intensity="1" exposure="1" environment-image="neutral" ar ar-modes="webxr scene-viewer quick-look" ar-scale="auto" loading="eager"><button slot="ar-button" class="ar-launch">Place in my room ↗</button><div slot="progress-bar" class="model-progress"><span></span></div></model-viewer><span class="model-badge">INTERACTIVE 3D</span></div>
+      <div class="three-d-info"><div class="brand">{{ m.category }} · 3D PREVIEW</div><h3>{{ m.title }}</h3><div class="price-row"><strong>₹{{ "{:,.0f}".format(m.price) }}</strong><span>Reference listing</span></div><div class="source-row"><span>Source: <b>{{ m.retailer }}</b></span><a href="{{ m.source_url }}" target="_blank" rel="noopener noreferrer">Check listing ↗</a></div><p class="model-disclaimer">{{ m.note }}</p><div class="three-d-actions"><a class="pill dark" href="{{ url_for('featured_ar', slug=m.slug) }}">Open full 3D / AR ↗</a><a class="pill light" href="{{ m.source_url }}" target="_blank" rel="noopener noreferrer">Retailer site</a></div></div>
+    </article>
+  {% endfor %}
+  </div>
+  <p class="model-footnote">Price references were observed on retailer/category search pages and may change. 3D models are representative visual assets, not scans of the exact retailer products. AR availability depends on browser, device support and secure hosting (HTTPS).</p>
+</section>
+
+<section class="catalogue" id="catalogue">
+  <div class="section-head"><div><p class="eyebrow">THE EDIT / FURNITURE DISCOVERY</p><h2>Pieces with <em>personality.</em></h2></div><div class="catalogue-count"><strong id="count">{{ products|length }}</strong><span>FURNITURE<br>SEARCH OPTIONS</span></div></div>
+  <div class="controls">
+    <label class="search"><span>⌕</span><input id="search" placeholder="Search sofa, chair, brand, retailer…"></label>
+    <select id="category"><option value="">All categories</option>{% for c in categories %}<option>{{ c }}</option>{% endfor %}</select>
+    <select id="retailer"><option value="">All retailers</option>{% for r in retailers %}<option>{{ r }}</option>{% endfor %}</select>
+    <select id="sort"><option value="relevance">Sort: Catalogue order</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="name">Name: A–Z</option></select>
+  </div>
+  <div class="filter-line"><div class="chips"><button class="chip active" data-cat="">Everything</button><button class="chip" data-cat="Sofas">Sofas</button><button class="chip" data-cat="Chairs">Chairs</button><button class="chip" data-cat="Tables">Tables</button><button class="chip" data-cat="Beds">Beds</button><button class="chip" data-cat="Storage">Storage</button><button class="chip" data-cat="Decor">Decor</button></div><span class="tiny">Prices and stock can change; verify at retailer.</span></div>
+  <section class="discovery-panel" aria-labelledby="discoveryTitle">
+    <div class="discovery-heading"><div><p class="eyebrow">SEARCH BEYOND ONE STORE</p><h3 id="discoveryTitle">Find it <em>everywhere.</em></h3><p class="tiny">Search multiple retailers at once. Live in-site Flipkart results appear when affiliate API credentials are configured; other stores open their own search results.</p></div></div>
+    <form id="discoverForm" class="discovery-form"><label class="search"><span>⌕</span><input id="discoverQuery" placeholder="Try ‘wooden coffee table’ or ‘3 seater sofa’" required></label><button class="pill dark" type="submit">Search across stores ↗</button></form>
+    <p id="discoverStatus" class="tiny" aria-live="polite">Search results from other retailers open in a new tab; their prices and availability are confirmed on the retailer site.</p>
+    <div id="discoverResults" class="discovery-results"></div>
+  </section>
+  <div class="product-grid" id="grid">
+  {% for p in products %}
+  <article class="product-card" data-id="{{ p.id }}" data-title="{{ p.title|lower }}" data-brand="{{ p.brand|lower }}" data-category="{{ p.category }}" data-retailer="{{ p.retailer }}" data-price="{{ p.price if p.price is not none else '' }}" data-style="{{ p.style|lower }}" data-colour="{{ p.colour|lower }}">
+    <div class="product-image">
+      {% if p.image_url %}<img src="{{ p.image_url }}" alt="{{ p.title }}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">{% endif %}
+      <div class="image-placeholder" {% if p.image_url %}style="display:none"{% endif %}><span>{{ p.category|upper }}</span><strong>{{ {'Sofas':'🛋️','Chairs':'🪑','Tables':'🪵','Beds':'🛏️','Storage':'🗄️','Lighting':'💡','Decor':'🪴'}.get(p.category,'🪑') }}</strong><small>IMAGE NOT AVAILABLE</small></div>
+      <span class="tag">{{ p.category }}</span><button class="heart" title="Save item" aria-label="Save item">♡</button>
+    </div>
+    <div class="product-info"><div class="brand">{{ p.brand or p.retailer or "WEB FIND" }}</div><h3>{{ p.title }}</h3>
+      <div class="price-row"><strong>{% if p.price is not none %}{{ p.currency }} {{ "{:,.0f}".format(p.price) }}{% else %}See live price ↗{% endif %}</strong><span>{{ p.retailer or "Unknown retailer" }}</span></div>
+      <div class="product-actions"><a href="#" class="view-ar" data-model="{{ p.model_url or model_by_category.get(p.category, model_by_category.get('Chairs')) }}" data-usdz="{{ p.usdz_url or '' }}" data-title="{{ p.title|e }}" data-source="{{ p.retailer|e }}">Try similar in 3D / AR ↗</a>{% if p.product_url %}<a href="{{ p.product_url }}" target="_blank" rel="noopener noreferrer">Check source / live price ↗</a>{% endif %}</div>
+      <details class="shop-links"><summary>Compare this style across stores ↗</summary><div class="shop-link-list">
+        <a target="_blank" rel="noopener noreferrer" href="https://www.flipkart.com/search?q={{ p.title|replace(' — Explore Options','')|urlencode }}">Flipkart ↗</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://www.amazon.in/s?k={{ p.title|replace(' — Explore Options','')|urlencode }}">Amazon India ↗</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://www.ikea.com/in/en/search/?q={{ p.title|replace(' — Explore Options','')|urlencode }}">IKEA India ↗</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://www.urbanladder.com/search?q={{ p.title|replace(' — Explore Options','')|urlencode }}">Urban Ladder ↗</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://www.pepperfry.com/site_product/search?q={{ p.title|replace(' — Explore Options','')|urlencode }}">Pepperfry ↗</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://www.woodenstreet.com/search?query={{ p.title|replace(' — Explore Options','')|urlencode }}">WoodenStreet ↗</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://www.royaloakindia.com/catalogsearch/result/?q={{ p.title|replace(' — Explore Options','')|urlencode }}">Royaloak ↗</a>
+        <a target="_blank" rel="noopener noreferrer" href="https://www.google.com/search?tbm=shop&q={{ p.title|replace(' — Explore Options','')|urlencode }}">Google Shopping ↗</a>
+      </div></details>
+      <details><summary>Product details</summary><p>{{ p.description or "No description extracted from source page." }}</p><small>Data: {{ p.source_type }}{% if p.scraped_at %} · {{ p.scraped_at[:10] }}{% endif %}</small></details>
+    </div>
+  </article>
+  {% endfor %}
+  </div>
+  <div id="empty" class="empty" hidden>No matches. Try a different search or add more products from Admin.</div>
+</section>
+<section id="arPreview" class="ar-preview" hidden><div class="ar-preview-head"><div><p class="eyebrow">3D / AUGMENTED REALITY</p><h2 id="arTitle">View in your room</h2></div><button class="pill light" id="closeAR" type="button">Close ×</button></div><model-viewer id="furnitureViewer" ar ar-modes="webxr scene-viewer quick-look" ar-scale="auto" camera-controls touch-action="pan-y" shadow-intensity="1" exposure="1" alt="Selected furniture 3D model"><button slot="ar-button" class="pill dark">View in your room ↗</button></model-viewer><p class="tiny">The selected listing opens a representative 3D model for its furniture category (not the exact retailer SKU unless a matching model is supplied). On supported iPhones, Safari can launch Quick Look; pinch to resize where enabled. HTTPS is required for phone access.</p></section>
+<section class="handoff" id="handoff"><div><p class="eyebrow">HOW THE DEMO CONNECTS</p><h2>One catalogue.<br><em>Real 3D assets.</em></h2><p>Featured models open in an interactive 3D viewer and can launch native mobile AR on supported devices. The Unity AR Foundation starter is provided separately for a native build.</p></div><div class="handoff-panel"><div class="status"><span class="pulse"></span> 3D ASSET LIBRARY</div><div class="selected-name">6 models included</div><div class="selected-meta">Sofa · lounge chair · coffee table · queen bed · wardrobe · dining set</div><p class="tiny">To use the native Unity app, open the Unity starter project in Unity Editor on your Mac, enable AR Foundation plus ARCore/ARKit, then build to the phone. The mobile Companion screen alone does not import a Flask website.</p><a class="pill dark" href="#3d-studio">Explore 3D models ↑</a></div></section>
+</main>
+<footer><span>JKA FURNISHING © 2026</span><span>BUILT FOR BETTER SPACES · A STUDENT PROJECT</span><a href="/export.csv">EXPORT CSV ↓</a><a href="/export.json">EXPORT JSON ↓</a></footer>
+<script>
+const cards=[...document.querySelectorAll('.product-card')];
+
+function chooseModel(categoryOrTitle){const v=String(categoryOrTitle||'').toLowerCase();if(/sofa|couch|loveseat/.test(v))return '/static/models/sofa_contemporary.glb';if(/bed|mattress/.test(v))return '/static/models/queen_bed.glb';if(/wardrobe|storage|shelf|cabinet|dresser|bookcase/.test(v))return '/static/models/wardrobe.glb';if(/dining|table|desk|console/.test(v))return /dining/.test(v)?'/static/models/dining_set.glb':'/static/models/coffee_table.glb';return '/static/models/accent_chair.glb';}
+
+const discoverForm=document.querySelector('#discoverForm');
+const discoverQuery=document.querySelector('#discoverQuery');
+const discoverStatus=document.querySelector('#discoverStatus');
+const discoverResults=document.querySelector('#discoverResults');
+discoverForm.addEventListener('submit',async ev=>{
+ ev.preventDefault(); const q=discoverQuery.value.trim(); if(!q)return;
+ discoverStatus.textContent='Searching connected sources…'; discoverResults.innerHTML='';
+ try {
+  const data=await (await fetch('/api/discover?q='+encodeURIComponent(q))).json();
+  discoverStatus.textContent=data.message||'Search links ready.';
+  if(data.products&&data.products.length){
+   const wrap=document.createElement('div'); wrap.className='api-results';
+   data.products.forEach(p=>{
+    const card=document.createElement('article'); card.className='api-product';
+    const image=document.createElement('img'); image.src=p.image_url||''; image.alt=''; image.loading='lazy'; if(!p.image_url)image.style.display='none';
+    const info=document.createElement('div'); const title=document.createElement('strong'); title.textContent=p.title; const brand=document.createElement('p'); brand.textContent=[p.brand,p.retailer].filter(Boolean).join(' · '); const price=document.createElement('b'); price.textContent=p.price!=null?(p.currency||'INR')+' '+Number(p.price).toLocaleString('en-IN'):'Price unavailable'; const link=document.createElement('a'); link.href=p.product_url; link.target='_blank'; link.rel='noopener noreferrer'; link.textContent='View on retailer ↗'; const br=document.createElement('br'); const ar=document.createElement('a'); ar.href='#arPreview'; ar.className='view-ar'; ar.dataset.model=chooseModel(p.category||q); ar.dataset.title=p.title; ar.dataset.usdz=''; ar.textContent='Try similar in 3D / AR ↗'; info.append(title,brand,price,document.createElement('br'),link,br,ar); card.append(image,info); wrap.append(card);
+   }); discoverResults.append(wrap);
+  }
+  const links=document.createElement('div'); links.className='source-links';
+  (data.sources||[]).forEach(source=>{const a=document.createElement('a');a.className='pill light';a.href=source.url;a.target='_blank';a.rel='noopener noreferrer';a.textContent=source.name+' ↗';links.append(a)}); discoverResults.append(links);
+ } catch(e){discoverStatus.textContent='Search is temporarily unavailable. Try again.';}
+});
+
+const search=document.querySelector('#search'), category=document.querySelector('#category'), retailer=document.querySelector('#retailer'), sort=document.querySelector('#sort');
+let quickCat='';
+function filterCards(){
+ let q=search.value.toLowerCase().trim(), cat=quickCat||category.value, ret=retailer.value;
+ let shown=cards.filter(c=>(!q || (c.dataset.title+' '+c.dataset.brand+' '+c.dataset.retailer+' '+c.dataset.category+' '+c.dataset.style+' '+c.dataset.colour).includes(q))&&(!cat||c.dataset.category===cat)&&(!ret||c.dataset.retailer===ret));
+ if(sort.value==='low') shown.sort((a,b)=>(parseFloat(a.dataset.price)||Infinity)-(parseFloat(b.dataset.price)||Infinity));
+ if(sort.value==='high') shown.sort((a,b)=>(parseFloat(b.dataset.price)||-Infinity)-(parseFloat(a.dataset.price)||-Infinity));
+ if(sort.value==='name') shown.sort((a,b)=>a.dataset.title.localeCompare(b.dataset.title));
+ cards.forEach(c=>c.hidden=!shown.includes(c)); shown.forEach(c=>document.querySelector('#grid').appendChild(c));
+ document.querySelector('#count').textContent=shown.length;
+ document.querySelector('#empty').hidden=shown.length>0;
+}
+[search,category,retailer,sort].forEach(el=>el.addEventListener('input',filterCards));
+document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');quickCat=b.dataset.cat;category.value=quickCat;filterCards()}));
+document.querySelectorAll('.heart').forEach(b=>b.addEventListener('click',()=>{b.classList.toggle('saved');b.textContent=b.classList.contains('saved')?'♥':'♡'}));
+</script>
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+<script>
+document.querySelectorAll('.view-ar').forEach(link=>link.addEventListener('click',e=>{e.preventDefault();const panel=document.querySelector('#arPreview');const viewer=document.querySelector('#furnitureViewer');viewer.src=link.dataset.model;if(link.dataset.usdz)viewer.setAttribute('ios-src',link.dataset.usdz);else viewer.removeAttribute('ios-src');document.querySelector('#arTitle').textContent=link.dataset.title+' — view in your room';panel.hidden=false;panel.scrollIntoView({behavior:'smooth',block:'center'});}));
+document.querySelector('#closeAR')?.addEventListener('click',()=>{document.querySelector('#arPreview').hidden=true;document.querySelector('#furnitureViewer').removeAttribute('src');});
+</script></body></html>
