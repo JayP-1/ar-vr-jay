@@ -1,0 +1,15 @@
+JKA FURNISHING — FINAL 3D / AR DEMO
+
+1. Open Terminal and run from the project folder:
+   python3 -m venv .venv
+   source .venv/bin/activate
+   python -m pip install -r requirements.txt
+   PORT=5001 python app.py
+
+2. Open http://127.0.0.1:5001 in Chrome.
+3. The first section is the 3D Studio with six real 3D mesh models. Drag to rotate; tap Open full 3D / AR. On a compatible phone, Place in my room launches native AR.
+4. The catalogue contains many more furniture search cards. Prices on generic search cards are shown as live-price links because those are retailer search destinations, not verified individual product records.
+
+IMPORTANT: mobile AR requires HTTPS and a compatible phone/browser. The included 3D models are representative models, not exact scans of the listed retailer products. Price references may change. Links are retailer search/category links, not affiliate-tracked unless you add your own approved affiliate credentials.
+
+Unity: see unity/JKA_Unity_AR_Starter/README.md. The mobile Companion screen alone does not import a Flask website; a native Unity AR app must be opened/configured/built in Unity Editor.

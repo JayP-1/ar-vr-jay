@@ -1,0 +1,24 @@
+JKA FURNISHING — DEPLOY TO IPHONE (HTTPS)
+
+1) Publish the contents of this JKA_Furnishing_FullStack folder to a GitHub repository.
+   Easiest Mac route: install GitHub Desktop, sign in, Add Existing Repository, select this folder,
+   then Publish repository. Keep the repo private if you prefer.
+
+2) Open https://dashboard.render.com/ and sign in.
+3) Choose New + -> Blueprint, then connect/select the GitHub repository.
+   Render detects render.yaml and creates the Python web service.
+   If using New -> Web Service instead, set:
+     Build Command: pip install -r requirements.txt
+     Start Command: gunicorn app:app
+4) Wait until the deployment says Live. Copy the https://....onrender.com URL.
+5) Open that HTTPS URL in Safari on your iPhone. Open the 3D Studio, select a model,
+   and tap Place in my room. In Quick Look, tap the AR view and follow placement prompts.
+6) On catalogue cards, “Try similar in 3D / AR” opens a representative model selected by category.
+   It is not an exact 3D replica of the retailer SKU unless a matching model asset is provided.
+
+IMPORTANT:
+- Do not enter affiliate API secrets in front-end code or commit .env.
+- Free services may sleep after inactivity and need a moment to wake.
+- Render's free local filesystem is ephemeral; demo product/database changes may reset after redeploy/restart.
+- iPhone AR Quick Look needs a compatible model asset. The site includes GLB models; model-viewer can generate a USDZ conversion for Quick Look in supported browsers, but test on the actual iPhone before presenting.
+- Prices shown in the featured 3D section are reference prices; check current offers on the linked retailer page.
